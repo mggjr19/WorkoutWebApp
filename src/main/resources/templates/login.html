@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Workout Tracker - Login</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f4f6f8; margin:0; }
+    .container { max-width:420px; margin:90px auto; background:#fff; padding:32px; border-radius:10px; box-shadow:0 4px 14px rgba(0,0,0,.1); }
+    h1 { margin:0 0 10px; }
+    p { color:#555; margin:0 0 20px; }
+    label { display:block; margin:12px 0 6px; font-weight:bold; }
+    input { width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; }
+    button { width:100%; margin-top:18px; padding:12px; border:0; border-radius:6px; background:#007bff; color:#fff; font-weight:bold; cursor:pointer; }
+    .error { background:#ffe5e5; padding:10px; border-radius:6px; margin-top:12px; }
+    .hint { margin-top:14px; font-size: 0.9em; color:#666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Workout Tracker</h1>
+    <p>Sign in to continue</p>
+
+    <div th:if="${param.error}" class="error">
+      Invalid username or password.
+    </div>
+    <div th:if="${param.logout}" class="hint">
+      You have been logged out.
+    </div>
+
+	<form th:action="@{/login}" method="post">
+
+	  <!-- ✅ CSRF token required by Spring Security -->
+	  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+	  <label for="username">Username</label>
+	  <input id="username" name="username" type="text" required />
+
+	  <label for="password">Password</label>
+	  <input id="password" name="password" type="password" required />
+
+	  <button type="submit">Login</button>
+
+	  <div th:if="${param.error}" style="margin-top:10px;color:red;">
+	    Invalid username or password (or login blocked).
+	  </div>
+	</form>
+
+    <div class="hint">
+      Demo login: <b>mark</b> / <b>password</b>
+    </div>
+  </div>
+</body>
+</html>
