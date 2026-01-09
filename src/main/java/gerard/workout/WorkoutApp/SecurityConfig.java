@@ -20,10 +20,10 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
-            	    .loginPage("/login")
-            	    .successHandler((request, response, authentication) -> response.sendRedirect("/app"))
-            	    .permitAll()
-            	)
+                .loginPage("/login")
+                .successHandler((request, response, authentication) -> response.sendRedirect("/app"))
+                .permitAll()
+            )
             .logout(logout -> logout.logoutSuccessUrl("/login?logout"))
             .build();
     }
