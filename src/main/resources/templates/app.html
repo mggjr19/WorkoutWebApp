@@ -1,15 +1,510 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>Workout Tracker</title>
-</head>
-<body>
-  <h1>You’re logged in 🎉</h1>
-  <p>This will be your dashboard.</p>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Workout Tracker - Dashboard</title>
 
-  <form method="post" action="/logout">
-    <button type="submit">Logout</button>
-  </form>
+  <style>
+    :root{
+      --bg: #0b0b0f;
+      --panel: rgba(255,255,255,0.06);
+      --panel2: rgba(255,255,255,0.08);
+      --border: rgba(255,255,255,0.10);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.65);
+      --muted2: rgba(255,255,255,0.50);
+
+      /* Neon accents */
+      --blue: #3b82f6;
+      --cyan: #22d3ee;
+      --pink: #ec4899;
+      --green: #22c55e;
+      --amber: #f59e0b;
+    }
+
+    * { box-sizing: border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(1200px 600px at 20% -10%, rgba(59,130,246,0.20), transparent 60%),
+        radial-gradient(900px 500px at 90% 0%, rgba(34,211,238,0.16), transparent 55%),
+        radial-gradient(900px 700px at 10% 100%, rgba(236,72,153,0.10), transparent 55%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x:hidden;
+    }
+
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 18px 60px;
+    }
+
+    /* Top bar */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 16px;
+      padding: 14px 14px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.04));
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .logo{
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(34,211,238,0.9), rgba(59,130,246,0.9) 55%, rgba(236,72,153,0.75)),
+        #111;
+      box-shadow: 0 10px 30px rgba(34,211,238,0.20);
+      flex: 0 0 auto;
+      display:grid;
+      place-items:center;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .logo svg{ opacity:0.95; }
+
+    .brand-text{
+      display:flex;
+      flex-direction:column;
+      min-width: 0;
+    }
+    .brand-text .title{
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      line-height: 1.1;
+      font-size: 1.05rem;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .brand-text .subtitle{
+      color: var(--muted);
+      font-size: 0.9rem;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+
+    .userbox{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .pill{
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.06);
+      padding: 8px 10px;
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      max-width: 52vw;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .logout form{ margin:0; }
+    .btn-ghost{
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.22);
+      color: rgba(255,255,255,0.85);
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor:pointer;
+      transition: transform .15s ease, background .15s ease, border-color .15s ease;
+      font-weight: 700;
+    }
+    .btn-ghost:hover{
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.35);
+      transform: translateY(-1px);
+    }
+
+    /* Hero */
+    .hero{
+      margin-top: 22px;
+      padding: 22px 18px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+      backdrop-filter: blur(10px);
+    }
+
+    .hero h1{
+      margin:0 0 6px 0;
+      font-size: 1.7rem;
+      letter-spacing: 0.2px;
+    }
+    .hero p{
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .spark{
+      display:inline-block;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(34,211,238,0.35);
+      background: rgba(34,211,238,0.10);
+      color: rgba(210,250,255,0.92);
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
+    /* Card grid */
+    .grid{
+      margin-top: 18px;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    @media (min-width: 820px){
+      .grid{ grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      .hero{ padding: 24px 22px; }
+      .hero h1{ font-size: 2.0rem; }
+    }
+
+    .card{
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+      box-shadow: 0 18px 40px rgba(0,0,0,0.40);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .card::before{
+      content:"";
+      position:absolute;
+      inset:-1px;
+      background: radial-gradient(400px 200px at 20% 20%, rgba(59,130,246,0.22), transparent 60%);
+      opacity: 0.9;
+      pointer-events:none;
+    }
+
+    .card.workouts::before{
+      background: radial-gradient(420px 220px at 25% 15%, rgba(34,211,238,0.24), transparent 60%);
+    }
+    .card.food::before{
+      background: radial-gradient(420px 220px at 25% 15%, rgba(34,197,94,0.20), transparent 60%);
+    }
+    .card.stats::before{
+      background: radial-gradient(420px 220px at 25% 15%, rgba(245,158,11,0.20), transparent 60%);
+    }
+
+    .card-inner{
+      position:relative;
+      padding: 18px 16px 16px;
+    }
+
+    .card-head{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .icon{
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display:grid;
+      place-items:center;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      flex: 0 0 auto;
+    }
+
+    .card h2{
+      margin:0;
+      font-size: 1.2rem;
+      letter-spacing: 0.2px;
+    }
+
+    .card p{
+      margin: 8px 0 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .actions{
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+
+    .btn{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      text-decoration:none;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.92);
+      transition: transform .15s ease, background .15s ease, border-color .15s ease;
+      font-weight: 700;
+    }
+
+    .btn:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.10);
+      border-color: rgba(255,255,255,0.22);
+    }
+
+    .btn .hint{
+      font-weight: 700;
+      color: rgba(255,255,255,0.65);
+      font-size: 0.9rem;
+    }
+
+    /* Mini stat row */
+    .mini-stats{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .mini{
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.25);
+      border-radius: 14px;
+      padding: 12px 10px;
+      text-align:left;
+    }
+    .mini .label{
+      color: var(--muted2);
+      font-size: 0.82rem;
+    }
+    .mini .value{
+      margin-top: 6px;
+      font-size: 1.05rem;
+      font-weight: 900;
+      letter-spacing: 0.2px;
+    }
+
+    /* Footer note */
+    .footer{
+      margin-top: 18px;
+      color: var(--muted2);
+      font-size: 0.9rem;
+      text-align:center;
+    }
+    .footer code{
+      background: rgba(255,255,255,0.08);
+      padding: 2px 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.85);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <!-- Dumbbell icon -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M7 10V14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <path d="M17 10V14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <path d="M9 12H15" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <path d="M5 9V15" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <path d="M19 9V15" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <div class="brand-text">
+          <div class="title">Workout Tracker</div>
+          <div class="subtitle">Simple tracking, real progress</div>
+        </div>
+      </div>
+
+      <div class="userbox">
+        <!-- Shows logged-in username -->
+        <div class="pill">
+          Welcome,
+          <span th:text="${#authentication.name}">mark</span>
+        </div>
+
+        <div class="logout">
+          <form method="post" th:action="@{/logout}">
+            <!-- CSRF token -->
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+            <button class="btn-ghost" type="submit">Logout</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <h1>
+        Your dashboard
+        <span class="spark">Demo Mode</span>
+      </h1>
+      <p>
+        Pick what you want to do today — log a workout, track food, or check your progress.
+        (These buttons can be placeholders until you build the pages.)
+      </p>
+    </div>
+
+    <!-- Cards -->
+    <div class="grid">
+
+      <!-- Workouts -->
+      <div class="card workouts">
+        <div class="card-inner">
+          <div class="card-head">
+            <div class="icon" aria-hidden="true">
+              <!-- Workout icon -->
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M6 12h12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M4 9v6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M20 9v6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M8 10v4" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M16 10v4" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h2>Workouts</h2>
+          </div>
+
+          <p>Plan, log, and review lifts. Keep it simple: sets, reps, weight.</p>
+
+          <div class="actions">
+            <a class="btn" href="/workouts/new">
+              <span>Create Workout</span>
+              <span class="hint">+</span>
+            </a>
+            <a class="btn" href="/workouts">
+              <span>View Past Workouts</span>
+              <span class="hint">→</span>
+            </a>
+            <a class="btn" href="/workouts/templates">
+              <span>Workout Templates</span>
+              <span class="hint">★</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Food Tracking -->
+      <div class="card food">
+        <div class="card-inner">
+          <div class="card-head">
+            <div class="icon" aria-hidden="true">
+              <!-- Apple icon -->
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M14.5 6.5c1.5-1.5 1.7-3.2 1.7-4.3-1.2.1-2.6.8-3.4 1.6-.8.8-1.5 2-1.4 3.3 1.2.1 2.2-.2 3.1-.6Z" fill="white" opacity="0.9"/>
+                <path d="M12 8c-1.7 0-2.7-1-4.5-1C5.6 7 4 8.7 4 11.2 4 16.2 7.2 21 10.1 21c1.1 0 1.9-.7 3-.7s1.8.7 3 .7c2.4 0 4.9-4 5.6-7.1.2-.8.3-1.6.3-2.4C22 8.6 19.6 7 17.7 7 15.9 7 14.8 8 12 8Z" fill="white" opacity="0.9"/>
+              </svg>
+            </div>
+            <h2>Food Tracking</h2>
+          </div>
+
+          <p>Log meals and keep an eye on calories + protein. Consistency wins.</p>
+
+          <div class="actions">
+            <a class="btn" href="/food/new">
+              <span>Log Meal</span>
+              <span class="hint">+</span>
+            </a>
+            <a class="btn" href="/food">
+              <span>View Food Log</span>
+              <span class="hint">→</span>
+            </a>
+            <a class="btn" href="/food/goals">
+              <span>Set Macros / Goals</span>
+              <span class="hint">⚙</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress / Stats -->
+      <div class="card stats">
+        <div class="card-inner">
+          <div class="card-head">
+            <div class="icon" aria-hidden="true">
+              <!-- Chart icon -->
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path d="M4 19V5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M4 19H20" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M8 16v-5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M12 16v-8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <path d="M16 16v-3" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h2>Progress</h2>
+          </div>
+
+          <p>Quick view of your week. Wire these up later to real data.</p>
+
+          <div class="mini-stats">
+            <div class="mini">
+              <div class="label">Workouts this week</div>
+              <div class="value">0</div>
+            </div>
+            <div class="mini">
+              <div class="label">Avg calories</div>
+              <div class="value">—</div>
+            </div>
+            <div class="mini">
+              <div class="label">Protein goal</div>
+              <div class="value">—</div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <a class="btn" href="/stats">
+              <span>View Stats</span>
+              <span class="hint">→</span>
+            </a>
+            <a class="btn" href="/progress">
+              <span>Progress Charts</span>
+              <span class="hint">📈</span>
+            </a>
+            <a class="btn" href="/settings">
+              <span>Settings</span>
+              <span class="hint">⚙</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer">
+      Tip: create the pages later. For now, you can stub endpoints that return “Coming soon”.
+      Example: <code>@GetMapping("/workouts")</code>
+    </div>
+
+  </div>
 </body>
 </html>
